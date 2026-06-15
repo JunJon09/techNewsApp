@@ -1,0 +1,33 @@
+{
+  "name": "backend",
+  "module": "src/index.ts",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "bun run --hot src/server.ts",
+    "start": "bun run src/server.ts",
+    "test": "bunx vitest run",
+    "test:watch": "bunx vitest",
+    "test:coverage": "bunx vitest run --coverage",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "bun run src/db/migrate.ts"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@vitest/coverage-v8": "^4.1.9",
+    "drizzle-kit": "^0.31.10",
+    "vitest": "^4.1.9"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "@hono/zod-validator": "^0.8.0",
+    "bullmq": "^5.78.1",
+    "drizzle-orm": "^0.45.2",
+    "hono": "^4.12.25",
+    "ioredis": "^5.11.1",
+    "postgres": "^3.4.9",
+    "zod": "^4.4.3"
+  }
+}

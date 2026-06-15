@@ -1,0 +1,23 @@
+# 環境変数（絶対にコミットしない）
+.env
+.env.local
+.env*.local
+
+# 依存関係
+node_modules/
+.bun/
+
+# ビルド成果物
+.next/
+dist/
+out/
+
+# ログ
+*.log
+
+# OS
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
