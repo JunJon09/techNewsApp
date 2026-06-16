@@ -1,7 +1,7 @@
 import { fetchNewsQueue, createFetchNewsWorker } from './fetch-news.job'
 
-// 毎時0分にニュースを取得（Cron式）
-const CRON_EVERY_HOUR = '0 * * * *'
+// 毎日0時にニュースを取得（Cron式）
+const CRON_EVERY_DAY = '0 0 * * *'
 
 export async function startScheduler() {
   // 既存の繰り返しジョブをクリアして再登録
@@ -10,7 +10,7 @@ export async function startScheduler() {
   await fetchNewsQueue.add(
     'scheduled',
     { limit: 30 },
-    { repeat: { pattern: CRON_EVERY_HOUR } },
+    { repeat: { pattern: CRON_EVERY_DAY } },
   )
 
   // 起動直後にも一度実行
@@ -26,6 +26,6 @@ export async function startScheduler() {
     console.error(`[scheduler] ジョブ失敗: ${job?.name}`, err.message)
   })
 
-  console.log('[scheduler] スケジューラー起動 (毎時0分)')
+  console.log('[scheduler] スケジューラー起動 (毎日0時)')
   return worker
 }

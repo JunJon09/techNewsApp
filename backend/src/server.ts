@@ -1,3 +1,4 @@
+import './lib/otel' // OTel はアプリより先に初期化する
 import app from './index'
 import { startScheduler } from './jobs/scheduler'
 
