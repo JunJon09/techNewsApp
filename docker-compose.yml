@@ -78,6 +78,14 @@ services:
       - frontend
       - backend
 
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    restart: always
+    mem_limit: 64m
+    command: tunnel --no-autoupdate --url http://nginx:80
+    depends_on:
+      - nginx
+
   prometheus:
     image: prom/prometheus:latest
     restart: always
