@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      packages: write  # GHCR への push に必要
+      packages: write
 
     steps:
       - uses: actions/checkout@v4
@@ -20,7 +20,6 @@ jobs:
         id: lower
         run: echo "owner=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
 
-      # ARM64（ラズパイ3）向けのクロスコンパイルに必要
       - name: QEMU セットアップ
         uses: docker/setup-qemu-action@v3
 
@@ -39,15 +38,17 @@ jobs:
         with:
           context: ./backend
           file: ./backend/Dockerfile
-          # amd64（Mac/サーバー）と arm64（ラズパイ3 64bit OS）向けにビルド
           platforms: linux/amd64,linux/arm64
           push: true
+          # provenance を無効化しないとマルチプラットフォームビルドでキャッシュの
+          # blob 参照が壊れ "not_found" エラーが発生する
+          provenance: false
           tags: |
             ghcr.io/${{ steps.lower.outputs.owner }}/technewsapp-backend:latest
             ghcr.io/${{ steps.lower.outputs.owner }}/technewsapp-backend:${{ github.sha }}
-          # Buildx のキャッシュで2回目以降のビルドを高速化
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          # scope でバックエンド・フロントエンドのキャッシュを分離する
+          cache-from: type=gha,scope=backend
+          cache-to: type=gha,mode=max,scope=backend
 
       - name: フロントエンド イメージをビルド & push
         uses: docker/build-push-action@v6
@@ -56,8 +57,9 @@ jobs:
           file: ./frontend/Dockerfile
           platforms: linux/amd64,linux/arm64
           push: true
+          provenance: false
           tags: |
             ghcr.io/${{ steps.lower.outputs.owner }}/technewsapp-frontend:latest
             ghcr.io/${{ steps.lower.outputs.owner }}/technewsapp-frontend:${{ github.sha }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=frontend
+          cache-to: type=gha,mode=max,scope=frontend
