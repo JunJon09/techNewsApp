@@ -15,6 +15,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # GHCR はリポジトリ名が小文字必須のため変換する
+      - name: オーナー名を小文字に変換
+        id: lower
+        run: echo "owner=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
+
       # ARM64（ラズパイ3）向けのクロスコンパイルに必要
       - name: QEMU セットアップ
         uses: docker/setup-qemu-action@v3
@@ -38,8 +43,8 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           tags: |
-            ghcr.io/${{ github.repository_owner }}/technewsapp-backend:latest
-            ghcr.io/${{ github.repository_owner }}/technewsapp-backend:${{ github.sha }}
+            ghcr.io/${{ steps.lower.outputs.owner }}/technewsapp-backend:latest
+            ghcr.io/${{ steps.lower.outputs.owner }}/technewsapp-backend:${{ github.sha }}
           # Buildx のキャッシュで2回目以降のビルドを高速化
           cache-from: type=gha
           cache-to: type=gha,mode=max
@@ -52,7 +57,7 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           tags: |
-            ghcr.io/${{ github.repository_owner }}/technewsapp-frontend:latest
-            ghcr.io/${{ github.repository_owner }}/technewsapp-frontend:${{ github.sha }}
+            ghcr.io/${{ steps.lower.outputs.owner }}/technewsapp-frontend:latest
+            ghcr.io/${{ steps.lower.outputs.owner }}/technewsapp-frontend:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
