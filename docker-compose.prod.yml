@@ -1,0 +1,13 @@
+# ラズパイ本番用オーバーライド
+# 使い方: docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+#
+# ローカルビルドの代わりに GHCR からイメージを pull する
+
+services:
+  backend:
+    build: !reset null
+    image: ghcr.io/junjon09/technewsapp-backend:latest
+
+  frontend:
+    build: !reset null
+    image: ghcr.io/junjon09/technewsapp-frontend:latest

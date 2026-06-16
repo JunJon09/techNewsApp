@@ -1,5 +1,5 @@
 import { Worker, Queue } from 'bullmq'
-import { redisConnection } from '../lib/redis'
+import { bullmqConnection } from '../lib/redis'
 import { fetchTopStories } from '../lib/hn-client'
 import { db } from '../db/client'
 import { articles } from '../db/schema'
@@ -8,7 +8,7 @@ import { sql } from 'drizzle-orm'
 export const QUEUE_NAME = 'fetch-news'
 
 export const fetchNewsQueue = new Queue(QUEUE_NAME, {
-  connection: redisConnection,
+  connection: bullmqConnection,
   defaultJobOptions: {
     attempts: 3,
     backoff: { type: 'exponential', delay: 5000 },
@@ -55,6 +55,6 @@ export function createFetchNewsWorker() {
       console.log(`[fetch-news] DB保存完了`)
       return { fetched: stories.length }
     },
-    { connection: redisConnection },
+    { connection: bullmqConnection },
   )
 }

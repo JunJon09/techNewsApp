@@ -1,0 +1,89 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test-backend:
+    name: バックエンド テスト
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: technews
+          POSTGRES_USER: technews
+          POSTGRES_PASSWORD: technews
+        ports:
+          - 5433:5432
+        options: >-
+          --health-cmd "pg_isready -U technews"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: 依存関係インストール
+        run: bun install --frozen-lockfile
+
+      - name: DB マイグレーション
+        run: bun run src/db/migrate.ts
+        env:
+          DATABASE_URL: postgresql://technews:technews@localhost:5433/technews
+          REDIS_URL: redis://localhost:6379
+          TZ: Asia/Tokyo
+
+      - name: テスト実行
+        run: bunx vitest run
+        env:
+          DATABASE_URL: postgresql://technews:technews@localhost:5433/technews
+          REDIS_URL: redis://localhost:6379
+          TZ: Asia/Tokyo
+
+  lint-frontend:
+    name: フロントエンド Lint
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: 依存関係インストール
+        run: bun install --frozen-lockfile
+
+      - name: TypeScript 型チェック
+        run: |
+          # バックエンドの依存関係も必要（tsconfig が ../backend/src を参照するため）
+          cd ../backend && bun install --frozen-lockfile
+          cd ../frontend && bunx tsc --noEmit

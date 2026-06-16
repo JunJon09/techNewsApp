@@ -7,6 +7,7 @@ export default defineConfig({
       DATABASE_URL: 'postgresql://technews:technews@localhost:5433/technews',
       REDIS_URL: 'redis://localhost:6379',
       PORT: '8080',
+      TZ: 'Asia/Tokyo',
     },
   },
 })

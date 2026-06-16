@@ -1,27 +1,42 @@
 import { redisConnection } from '../lib/redis'
-import { findArticles } from '../db/articles.repository'
+import { findTodayArticles, findArticlesByDate } from '../db/articles.repository'
 
 // キャッシュの有効期限（5分）
 const CACHE_TTL_SECONDS = 60 * 5
 
-function buildCacheKey(limit: number, page: number): string {
-  return `articles:${limit}:${page}`
+function buildCacheKey(prefix: string, limit: number, page: number): string {
+  return `${prefix}:${limit}:${page}`
 }
 
+// 今日の記事を取得する（TOPページ用）
 export async function getArticles(limit: number, page: number) {
-  const cacheKey = buildCacheKey(limit, page)
+  const cacheKey = buildCacheKey('articles:today', limit, page)
 
-  // ① Redis にキャッシュがあれば即返す
   const cached = await redisConnection.get(cacheKey)
   if (cached) {
     return { articles: JSON.parse(cached), fromCache: true }
   }
 
-  // ② キャッシュなし → DB から取得
   const offset = (page - 1) * limit
-  const data = await findArticles(limit, offset)
+  const data = await findTodayArticles(limit, offset)
 
-  // ③ 結果を Redis にキャッシュ保存
+  await redisConnection.set(cacheKey, JSON.stringify(data), 'EX', CACHE_TTL_SECONDS)
+
+  return { articles: data, fromCache: false }
+}
+
+// 指定日（YYYYMMDD）の記事を取得する
+export async function getArticlesByDate(date: string, limit: number, page: number) {
+  const cacheKey = buildCacheKey(`articles:${date}`, limit, page)
+
+  const cached = await redisConnection.get(cacheKey)
+  if (cached) {
+    return { articles: JSON.parse(cached), fromCache: true }
+  }
+
+  const offset = (page - 1) * limit
+  const data = await findArticlesByDate(date, limit, offset)
+
   await redisConnection.set(cacheKey, JSON.stringify(data), 'EX', CACHE_TTL_SECONDS)
 
   return { articles: data, fromCache: false }
