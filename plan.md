@@ -177,6 +177,40 @@ docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
 
 ---
 
+#### Step 1-8: 記事詳細ページ・翻訳・語彙機能
+
+**方針**
+- 取得件数を5〜10件に絞り、テキスト記事のみを対象とする
+- Jina AI Reader で本文を取得 → OpenAI で翻訳・語彙抽出 → DB に保存（1記事1日1回）
+- 詳細ページ（`/articles/[id]`）にiframe埋め込み＋翻訳＋語彙を上下に並べる
+- iframeがブロックされた場合は「元記事を開く」リンクにフォールバック
+
+**バックエンド**
+- [ ] `articles` テーブルに3カラム追加（マイグレーション）
+  - `content TEXT` : Jinaで取得した英語原文（Markdown）
+  - `content_ja TEXT` : OpenAIによる日本語翻訳
+  - `keywords JSONB` : TOEIC700点超えの単語・イディオム一覧
+- [ ] `backend/src/lib/jina-client.ts` を作成
+  - `https://r.jina.ai/{url}` にGETリクエストしてMarkdownを返す関数
+- [ ] `backend/src/lib/openai-client.ts` を作成
+  - OpenAI APIクライアントの初期化
+  - 英語テキストを受け取り、日本語翻訳とTOEIC700点超えの単語一覧をJSON形式で返す関数
+- [ ] `fetch-news.job.ts` を修正
+  - 取得件数を5〜10件に変更
+  - 除外ドメインリストを定義（twitter.com / x.com / github.com / youtube.com / apps.apple.com / play.google.com / reddit.com）
+  - 記事保存後にJina → OpenAIの順で処理してDBに保存
+- [ ] `backend/src/db/articles.repository.ts` に単一記事取得関数を追加
+- [ ] `GET /api/articles/:id` エンドポイントを追加（`articles.route.ts`）
+
+**フロントエンド**
+- [ ] TOPページのリンク先を外部URLから `/articles/[id]` に変更
+- [ ] `frontend/app/articles/[id]/page.tsx` を新規作成
+  - 上段：iframe（`src` に元記事URL）＋エラー時は「元記事を開く →」リンクを表示
+  - 中段：日本語翻訳（`content_ja`）
+  - 下段：難しい単語一覧（`keywords`）
+
+---
+
 ### 【第2章】未来：ミニPC購入後の「2台連結Kubernetes」フェーズ
 
 #### Step 2-1: 2台を繋いだ k3s クラスターの構築

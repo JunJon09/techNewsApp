@@ -8,7 +8,7 @@ export async function findTodayArticles(limit: number, offset: number): Promise<
   return db
     .select()
     .from(articles)
-    .where(sql`DATE(fetched_at) = CURRENT_DATE`)
+    .where(sql`(fetched_at AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Tokyo')::date = CURRENT_DATE`)
     .orderBy(desc(articles.score))
     .limit(limit)
     .offset(offset)
@@ -20,7 +20,7 @@ export async function findArticlesByDate(date: string, limit: number, offset: nu
   return db
     .select()
     .from(articles)
-    .where(sql`DATE(fetched_at) = ${formatted}`)
+    .where(sql`(fetched_at AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Tokyo')::date = ${formatted}`)
     .orderBy(desc(articles.score))
     .limit(limit)
     .offset(offset)
