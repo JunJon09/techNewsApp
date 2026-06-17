@@ -42,6 +42,7 @@ services:
       REDIS_URL: redis://redis:6379
       PORT: "8080"
       TZ: Asia/Tokyo
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
     depends_on:
       postgres:
         condition: service_healthy

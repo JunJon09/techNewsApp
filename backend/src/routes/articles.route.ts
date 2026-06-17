@@ -1,7 +1,7 @@
 import { Hono } from 'hono'
 import { zValidator } from '@hono/zod-validator'
 import { z } from 'zod'
-import { getArticles, getArticlesByDate } from '../services/articles.service'
+import { getArticles, getArticlesByDate, getArticleById } from '../services/articles.service'
 
 const querySchema = z.object({
   limit: z.coerce.number().int().min(1).max(100).default(30),
@@ -13,7 +13,18 @@ const dateParamSchema = z.object({
   date: z.string().regex(/^\d{8}$/, '日付は YYYYMMDD 形式で指定してください'),
 })
 
+const idParamSchema = z.object({
+  id: z.coerce.number().int().positive(),
+})
+
 const route = new Hono()
+  // 記事詳細: GET /api/article/:id
+  .get('/article/:id', zValidator('param', idParamSchema), async (c) => {
+    const { id } = c.req.valid('param')
+    const result = await getArticleById(id)
+    if (!result.article) return c.json({ error: '記事が見つかりません' }, 404)
+    return c.json(result)
+  })
   // 今日の記事一覧: GET /api/articles?limit=10&page=1
   .get('/articles', zValidator('query', querySchema), async (c) => {
     const { limit, page } = c.req.valid('query')

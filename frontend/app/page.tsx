@@ -40,18 +40,12 @@ function ArticleCard({ article, rank }: { article: Article; rank: number }) {
         </span>
         <div className="flex-1 min-w-0">
           <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100 leading-snug">
-            {article.url ? (
-              <a
-                href={article.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hover:text-orange-500 dark:hover:text-orange-400 transition-colors"
-              >
-                {article.title}
-              </a>
-            ) : (
-              article.title
-            )}
+            <a
+              href={`/articles/${article.id}`}
+              className="hover:text-orange-500 dark:hover:text-orange-400 transition-colors"
+            >
+              {article.title}
+            </a>
             {hostname && (
               <span className="ml-2 text-xs font-normal text-gray-400 dark:text-gray-500">
                 ({hostname})

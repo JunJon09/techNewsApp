@@ -1,4 +1,4 @@
-import { pgTable, serial, integer, text, timestamp } from 'drizzle-orm/pg-core'
+import { pgTable, serial, integer, text, timestamp, jsonb } from 'drizzle-orm/pg-core'
 
 export const articles = pgTable('articles', {
   id:           serial('id').primaryKey(),
@@ -8,6 +8,9 @@ export const articles = pgTable('articles', {
   score:        integer('score').notNull().default(0),
   author:       text('author').notNull(),
   commentCount: integer('comment_count').notNull().default(0),
+  content:      text('content'),
+  contentJa:    text('content_ja'),
+  keywords:     jsonb('keywords'),
   fetchedAt:    timestamp('fetched_at').notNull().defaultNow(),
 })
 
