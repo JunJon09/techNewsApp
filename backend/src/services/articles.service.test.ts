@@ -20,6 +20,7 @@ const mockArticle = {
   id: 1, hnId: 123, title: 'テスト記事',
   url: 'https://example.com', score: 100,
   author: 'user1', commentCount: 10, fetchedAt: new Date(),
+  content: null, contentJa: null, keywords: null,
 }
 
 beforeEach(() => {
